@@ -17,7 +17,9 @@ class TgBot:
 
 @dataclass
 class Miscellaneous:
-    other_params: str = None
+    didox_token_url: str
+    didox_url: str
+    didox_pass: str
 
 
 @dataclass
@@ -40,5 +42,7 @@ def load_config(path: str = None):
         db=DbConfig(
            db_url=env.str("DB_URL")
         ),
-        misc=Miscellaneous()
+        misc=Miscellaneous(didox_token_url=env.str("DIDOX_TOKEN_URL"),
+                           didox_url=env.str("DIDOX_URL"),
+                           didox_pass=env.str("DIDOX_PASS"))
     )

@@ -5,8 +5,8 @@ class MainMenu(StatesGroup):
     get_menu = State()
 
 
-class Contract(StatesGroup):
-    get_contract = State()
+class Project(StatesGroup):
+    get_project = State()
     get_conf = State()
     get_inn = State()
     get_last_conf = State()

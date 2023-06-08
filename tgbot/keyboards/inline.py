@@ -16,11 +16,10 @@ contract_conf_kb = InlineKeyboardMarkup(row_width=1).add(
     InlineKeyboardButton("Bekor qilish", callback_data="back"))
 
 
-async def contracts_kb(user_id, config):
+def contracts_kb(projects):
     kb = InlineKeyboardMarkup(row_width=1)
-    contracts = await get_contracts(user_id, "user", config)
-    for contract in contracts:
-        kb.insert(InlineKeyboardButton(contract["name"], callback_data=contract["id"]))
+    for project in projects:
+        kb.insert(InlineKeyboardButton(project["name"], callback_data=project["name"]))
     kb.insert(back_btn)
-    return kb, len(contracts)
+    return kb
 

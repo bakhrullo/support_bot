@@ -2,7 +2,7 @@ from fpdf import FPDF
 from datetime import date
 
 
-def pdf_create(number):
+def pdf_create(number, name):
     pdf = FPDF("P", "mm", "Legal")
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -102,5 +102,5 @@ def pdf_create(number):
                 Директор                                                          Директор
     Абдуллаев  Д.Т.                                                            ____________________________________
     """)
-    pdf.output(f"{number}.pdf")
+    pdf.output(f"{name}.pdf")
 

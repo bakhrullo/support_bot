@@ -1,10 +1,8 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from tgbot.db.db_api import get_contracts
-
 back_btn = InlineKeyboardButton("Orqaga 🔙", callback_data="back")
 
-back_kb = InlineKeyboardMarkup(row_width=1).add(back_btn)
+back_kb = InlineKeyboardMarkup(row_width=1).add(InlineKeyboardButton("Orqaga 🔙", callback_data="backs"))
 
 menu_kb = InlineKeyboardMarkup(row_width=1).add(
     InlineKeyboardButton("Dogovor raqam olish", callback_data="contract"),
@@ -19,7 +17,7 @@ contract_conf_kb = InlineKeyboardMarkup(row_width=1).add(
 def contracts_kb(projects):
     kb = InlineKeyboardMarkup(row_width=1)
     for project in projects:
-        kb.insert(InlineKeyboardButton(project["name"], callback_data=project["name"]))
+        kb.insert(InlineKeyboardButton(project["name"], callback_data=f"{project['id']}_{project['name']}"))
     kb.insert(back_btn)
     return kb
 

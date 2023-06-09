@@ -16,3 +16,7 @@ class Check(StatesGroup):
     get_contract = State()
     get_inn = State()
     get_last_conf = State()
+
+
+class Certificate(StatesGroup):
+    get_certificate = State()

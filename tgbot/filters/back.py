@@ -10,6 +10,6 @@ class BackFilter(BoundFilter):
         self.is_back = is_back
 
     async def check(self, c: CallbackQuery):
-        if c.data == 'back':
+        if c.data == 'back' or c.data == 'backs':
             return False
         return True

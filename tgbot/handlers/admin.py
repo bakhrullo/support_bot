@@ -5,11 +5,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, CallbackQuery
 
-from tgbot.db.db_api import get_projects, get_agent, update_count
+from tgbot.db.db_api import get_projects, get_agent, create_contract, check_contract, get_project_db
 from tgbot.filters.back import BackFilter
 from tgbot.keyboards.inline import *
-from tgbot.misc.states import MainMenu, Project, Check
+from tgbot.misc.states import MainMenu, Project, Check, Certificate
 from tgbot.services.counter import count
+from tgbot.services.didox import didox_create_doc
 from tgbot.services.pdf import pdf_create
 
 
@@ -30,7 +31,7 @@ async def project(c: CallbackQuery, config):
 async def get_project(c: CallbackQuery, state: FSMContext, config):
     counter, agent = await count(config), await get_agent(config, c.from_user.id)
     number = f"{counter}/{agent['uniq']} от {date.today().strftime('%d.%m.%Y')}"
-    await state.update_data(number=number, id=c.data)
+    await state.update_data(number=number, name=c.data.split("_")[1], id=c.data.split("_")[0])
     await c.message.edit_text(f"Dogovor raqam olindi ✅\nSizning dogovor raqamingiz:\n\n{number}",
                               reply_markup=contract_conf_kb)
     await Project.next()
@@ -49,45 +50,71 @@ async def get_inn(m: Message, state: FSMContext):
     await Project.next()
 
 
-async def last_conf(c: CallbackQuery, state: FSMContext, config):
+async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     data = await state.get_data()
-    await update_count(config)
-    pdf_create(data['number'])
-
-
-
-
-async def check(c: CallbackQuery, config):
-    kb, count = await contracts_kb(c.from_user.id, config)
-    await c.message.edit_text(f"Sizda {count} ta proekt mavjud 📋\nQaysi proekt uchun tekshirmoxchisiz?",
-                              reply_markup=kb)
-    await Check.get_contract.set()
-
-
-async def get_check_contract(c: CallbackQuery):
-    await c.message.edit_text("Qaysi do'konning shartnomasini tekshirmoxchisiz?\nIltimos do'kon INN sini kiriting")
-    await Check.next()
-
-
-async def get_check_inn(m: Message):
-    await m.answer("Ushbu do'konda imzolanmay\nqolgan shartnoma mavjud emas", reply_markup=menu_kb)
-    await MainMenu.get_menu.set()
-
-
-async def get_last_conf(c: CallbackQuery):
+    await create_contract(config, project=data['id'], agent=c.from_user.id, inn=data['inn'], code=data['number'])
+    pdf_create(data['number'], c.from_user.id)
+    res = await didox_create_doc(config, c.from_user.id)
+    print(res)
     await c.message.edit_text("Qabul qilindi ✅", reply_markup=menu_kb)
     await MainMenu.get_menu.set()
 
 
+async def check(c: CallbackQuery, config):
+    projects = await get_projects(c.from_user.id, "user", config)
+    await c.message.edit_text(f"Sizda {len(projects)} ta proekt mavjud 📋\nQaysi birini tekshirishni istaysiz?",
+                              reply_markup=contracts_kb(projects))
+    await Check.get_contract.set()
+
+
+async def get_check_contract(c: CallbackQuery, state: FSMContext):
+    await state.update_data(name=c.data.split("_")[1], id=c.data.split("_")[0])
+    await c.message.edit_text("Qaysi do'konning shartnomasini tekshirmoxchisiz?\nIltimos do'kon INN sini kiriting")
+    await Check.next()
+
+
+async def get_check_inn(m: Message, state: FSMContext, config):
+    data = await state.get_data()
+    res = await check_contract(config, project=data["id"], inn=m.text)
+    if res["status"] == "Not Found":
+        await m.answer("Ushbu proektga dogovor tuzulmagan", reply_markup=menu_kb)
+    elif res["status"]:
+        await m.answer("Ushbu do'konda imzolanmay\nqolgan shartnoma mavjud emas", reply_markup=menu_kb)
+    elif not res["status"]:
+        await m.answer(f"Ushbu do'kon uchun {res['number']} shartnoma imzolanmay qolgan", reply_markup=menu_kb)
+    return await MainMenu.get_menu.set()
+
+
+async def certificate(c: CallbackQuery, config):
+    projects = await get_projects(c.from_user.id, "user", config)
+    await c.message.edit_text(f"Sizda {len(projects)} ta proekt mavjud 📋\nQaysi birini sertifikatini olishni istaysiz?",
+                              reply_markup=contracts_kb(projects))
+    await Certificate.get_certificate.set()
+
+
+async def get_certificate(c: CallbackQuery, config):
+    certificate_project = await get_project_db(c.data.split("_")[0], config)
+    if certificate_project["file"] is None:
+        return await c.answer("Sertifikat qo'shilmagan")
+    await c.message.delete()
+    await c.message.answer_document(document=certificate_project["file"], reply_markup=back_kb)
+
+
 async def back(c: CallbackQuery):
-    await c.message.edit_text("Bosh menu", reply_markup=menu_kb)
-    await MainMenu.get_menu.set()
+    if c.data == "back":
+        await c.message.edit_text("Bosh menu", reply_markup=menu_kb)
+    else:
+        await c.message.delete()
+        await c.message.answer("Bosh menu", reply_markup=menu_kb)
+    return await MainMenu.get_menu.set()
 
 
 def register_admin(dp: Dispatcher):
     dp.register_message_handler(start, commands=["start"], state="*", is_admin=True)
     dp.register_callback_query_handler(project, Text(equals="contract"), state=MainMenu.get_menu, is_admin=True)
     dp.register_callback_query_handler(check, Text(equals="check"), state=MainMenu.get_menu, is_admin=True)
+    dp.register_callback_query_handler(certificate, Text(equals="Certificate"), state=MainMenu.get_menu, is_admin=True)
+    dp.register_callback_query_handler(get_certificate, BackFilter(), state=Certificate.get_certificate, is_admin=True)
     dp.register_callback_query_handler(get_check_contract, state=Check.get_contract, is_admin=True)
     dp.register_callback_query_handler(get_project, BackFilter(), state=Project.get_project, is_admin=True)
     dp.register_callback_query_handler(get_conf, BackFilter(), state=Project.get_conf, is_admin=True)

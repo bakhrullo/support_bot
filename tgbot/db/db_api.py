@@ -50,6 +50,6 @@ async def create_contract(config, **kwargs):
 
 async def check_contract(config, **kwargs):
     async with aiohttp.ClientSession() as session:
-        async with session.get(url=f"{config.db.db_url}contract", params={"project": kwargs["project"],
-                                                                          "inn": kwargs["inn"]}) as response:
+        async with session.get(url=f"{config.db.db_url}contract", params={"project": int(kwargs["project"]),
+                                                                          "inn": str(kwargs["inn"])}) as response:
             return await response.json()

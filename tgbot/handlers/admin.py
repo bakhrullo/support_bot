@@ -51,7 +51,7 @@ async def get_inn(m: Message, state: FSMContext):
 
 
 async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
-    await c.message.answer("⏳")
+    await c.message.edit_text("⏳")
     data = await state.get_data()
     await create_contract(config, project=data['id'], agent=c.from_user.id, inn=data['inn'], code=data['number'])
     pdf_create(data['number'], c.from_user.id)

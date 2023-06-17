@@ -15,7 +15,7 @@ from tgbot.services.bot_commands import set_default_commands
 
 logger = logging.getLogger(__name__)
 
-DEBUG = True
+DEBUG = False
 
 
 def register_all_middlewares(dp, config):

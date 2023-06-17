@@ -44,7 +44,7 @@ async def get_conf(c: CallbackQuery):
 
 async def get_inn(m: Message, state: FSMContext):
     data = await state.get_data()
-    await m.answer(f"Dogovor raqam:\n{data['number']}\nKorxona INN si:\n{m.text}\nProekt nomi:\n{data['id']}\n"
+    await m.answer(f"Dogovor raqam:\n{data['number']}\nKorxona INN si:\n{m.text}\nProekt nomi:\n{data['name']}\n"
                    f"keltirilgan ma'lumotlarni\ntasdiqlaysizmi?", reply_markup=contract_conf_kb)
     await state.update_data(inn=m.text)
     await Project.next()
@@ -97,6 +97,7 @@ async def get_certificate(c: CallbackQuery, config):
     if certificate_project["file"] is None:
         return await c.answer("Sertifikat qo'shilmagan")
     await c.message.delete()
+    print(certificate_project)
     await c.message.answer_document(document=certificate_project["file"], reply_markup=back_kb)
 
 
@@ -115,7 +116,7 @@ def register_admin(dp: Dispatcher):
     dp.register_callback_query_handler(check, Text(equals="check"), state=MainMenu.get_menu, is_admin=True)
     dp.register_callback_query_handler(certificate, Text(equals="Certificate"), state=MainMenu.get_menu, is_admin=True)
     dp.register_callback_query_handler(get_certificate, BackFilter(), state=Certificate.get_certificate, is_admin=True)
-    dp.register_callback_query_handler(get_check_contract, state=Check.get_contract, is_admin=True)
+    dp.register_callback_query_handler(get_check_contract, BackFilter(), state=Check.get_contract, is_admin=True)
     dp.register_callback_query_handler(get_project, BackFilter(), state=Project.get_project, is_admin=True)
     dp.register_callback_query_handler(get_conf, BackFilter(), state=Project.get_conf, is_admin=True)
     dp.register_message_handler(get_inn, state=Project.get_inn, is_admin=True)

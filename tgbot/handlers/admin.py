@@ -32,31 +32,33 @@ async def get_project(c: CallbackQuery, state: FSMContext, config):
     counter, agent = await count(config), await get_agent(config, c.from_user.id)
     number = f"{counter}/{agent['uniq']} от {date.today().strftime('%d.%m.%Y')}"
     await state.update_data(number=number, name=c.data.split("_")[1], id=c.data.split("_")[0])
-    await c.message.edit_text(f"Dogovor raqam olindi ✅\nSizning dogovor raqamingiz:\n\n{number}",
+    await c.message.edit_text(f"Dogovor raqam olindi ✅\nSizning dogovor raqamingiz:\n\n<b>{number}</b>",
                               reply_markup=contract_conf_kb)
     await Project.next()
 
 
 async def get_conf(c: CallbackQuery):
-    await c.message.edit_text("Iltimos INN ni kiriting")
+    await c.message.edit_text("Iltimos dogovor tuzilayotgan korxonaning INN manzilini kiriting ✍️")
     await Project.next()
 
 
 async def get_inn(m: Message, state: FSMContext):
     data = await state.get_data()
-    await m.answer(f"Dogovor raqam:\n{data['number']}\nKorxona INN si:\n{m.text}\nProekt nomi:\n{data['name']}\n"
-                   f"keltirilgan ma'lumotlarni\ntasdiqlaysizmi?", reply_markup=contract_conf_kb)
+    await m.answer(f"Dogovor raqam:\n[{data['number']}]✅\nKorxona INN si:\n[{m.text}]✅\nProekt nomi:\n[{data['name']}]✅\n"
+                   f"Keltirilgan ma’lumotlarni qabul qilish uchun pastdagi tugmalardan foydalaning 👇", reply_markup=contract_conf_kb)
     await state.update_data(inn=m.text)
     await Project.next()
 
 
 async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
+    await c.message.answer("⏳")
     data = await state.get_data()
     await create_contract(config, project=data['id'], agent=c.from_user.id, inn=data['inn'], code=data['number'])
     pdf_create(data['number'], c.from_user.id)
     res = await didox_create_doc(config, c.from_user.id)
     print(res)
-    await c.message.edit_text("Qabul qilindi ✅", reply_markup=menu_kb)
+    await c.message.edit_text("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
+                              "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇", reply_markup=menu_kb)
     await MainMenu.get_menu.set()
 
 
@@ -69,7 +71,7 @@ async def check(c: CallbackQuery, config):
 
 async def get_check_contract(c: CallbackQuery, state: FSMContext):
     await state.update_data(name=c.data.split("_")[1], id=c.data.split("_")[0])
-    await c.message.edit_text("Qaysi do'konning shartnomasini tekshirmoxchisiz?\nIltimos do'kon INN sini kiriting")
+    await c.message.edit_text("Qaysi korxonaning shartnomasini tekshirmoqchi bo’lsangiz, ushbu korxonaning INN raqamini kiriting ✍️")
     await Check.next()
 
 
@@ -77,7 +79,7 @@ async def get_check_inn(m: Message, state: FSMContext, config):
     data = await state.get_data()
     res = await check_contract(config, project=data["id"], inn=m.text)
     if res["status"] == "Not Found":
-        await m.answer("Ushbu proektga dogovor tuzulmagan", reply_markup=menu_kb)
+        await m.answer("Ushbu korxonada tuzilgan dogovorlar topilmadi ❌", reply_markup=menu_kb)
     elif res["status"]:
         await m.answer("Ushbu do'konda imzolanmay\nqolgan shartnoma mavjud emas", reply_markup=menu_kb)
     elif not res["status"]:

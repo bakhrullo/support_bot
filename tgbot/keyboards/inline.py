@@ -5,13 +5,13 @@ back_btn = InlineKeyboardButton("Orqaga 🔙", callback_data="back")
 back_kb = InlineKeyboardMarkup(row_width=1).add(InlineKeyboardButton("Orqaga 🔙", callback_data="backs"))
 
 menu_kb = InlineKeyboardMarkup(row_width=1).add(
-    InlineKeyboardButton("Dogovor raqam olish", callback_data="contract"),
-    InlineKeyboardButton("Sertifikat olish", callback_data="Certificate"),
-    InlineKeyboardButton("Joriy shartnomani tekshirish", callback_data="check"))
+    InlineKeyboardButton("Dogovor raqam olish 🔗", callback_data="contract"),
+    InlineKeyboardButton("Sertifikat olish 📄", callback_data="Certificate"),
+    InlineKeyboardButton("Joriy shartnomani tekshirish ☑️", callback_data="check"))
 
 contract_conf_kb = InlineKeyboardMarkup(row_width=1).add(
-    InlineKeyboardButton("Tasdiqlash qilish", callback_data="confirm"),
-    InlineKeyboardButton("Bekor qilish", callback_data="back"))
+    InlineKeyboardButton("Tasdiqlash ✅", callback_data="confirm"),
+    InlineKeyboardButton("Bekor qilish ❌", callback_data="back"))
 
 
 def contracts_kb(projects):

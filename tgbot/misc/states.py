@@ -5,6 +5,11 @@ class MainMenu(StatesGroup):
     get_menu = State()
 
 
+class Send(StatesGroup):
+    get_file = State()
+    get_inn = State()
+
+
 class Project(StatesGroup):
     get_project = State()
     get_conf = State()

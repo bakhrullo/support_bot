@@ -1,9 +1,9 @@
 import aiohttp
 
 
-async def get_projects(user_id, option, config):
+async def get_projects(user_id, config):
     async with aiohttp.ClientSession() as session:
-        async with session.get(url=f"{config.db.db_url}project", params={"id": user_id, "option": option}) as \
+        async with session.get(url=f"{config.db.db_url}project", params={"id": user_id}) as \
                 response:
             return await response.json()
 

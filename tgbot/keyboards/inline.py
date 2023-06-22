@@ -7,6 +7,7 @@ back_kb = InlineKeyboardMarkup(row_width=1).add(InlineKeyboardButton("Orqaga �
 menu_kb = InlineKeyboardMarkup(row_width=1).add(
     InlineKeyboardButton("Dogovor raqam olish 🔗", callback_data="contract"),
     InlineKeyboardButton("Sertifikat olish 📄", callback_data="Certificate"),
+    InlineKeyboardButton("Shartnoma yuborish 📧", callback_data="send"),
     InlineKeyboardButton("Joriy shartnomani tekshirish ☑️", callback_data="check"))
 
 contract_conf_kb = InlineKeyboardMarkup(row_width=1).add(

@@ -3,7 +3,7 @@ import base64
 
 
 def convert_doc(name):
-    with open(f"{name}.pdf", "rb") as file:
+    with open(f"{name}", "rb") as file:
         return base64.b64encode(file.read())
 
 

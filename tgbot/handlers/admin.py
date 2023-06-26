@@ -36,7 +36,7 @@ async def get_inn_send(m: Message, state: FSMContext, config):
     mes = await m.answer("⏳")
     data = await state.get_data()
     doc = await m.bot.download_file_by_id(data["file"], destination_dir="files")
-    res = await didox_create_doc(config, doc.name)
+    res = await didox_create_doc(config, doc.name, "Shartnoma")
     await mes.edit_text("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
                         "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
                         reply_markup=menu_kb)
@@ -79,7 +79,7 @@ async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     data = await state.get_data()
     await create_contract(config, project=data['id'], agent=c.from_user.id, inn=data['inn'], code=data['number'])
     pdf_create(data['number'], c.from_user.id)
-    await didox_create_doc(config, f"{c.from_user.id}.pdf")
+    await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
     await c.message.edit_text("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
                               "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
                               reply_markup=menu_kb)

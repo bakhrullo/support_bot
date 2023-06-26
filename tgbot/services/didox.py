@@ -11,12 +11,13 @@ async def didox_get_token(config):
     async with aiohttp.ClientSession() as session:
         async with session.post(url=config.misc.didox_token_url, data={"password": config.misc.didox_pass}) as \
                 response:
+            print(response)
             return await response.json()
 
 
-async def didox_create_doc(config, doc_name):
+async def didox_create_doc(config, doc_name, doc_no, doc_inn=None):
     token = await didox_get_token(config)
-    encoded_doc = convert_doc(doc_name)
+    encoded_doc = str(convert_doc(doc_name), encoding="utf-8")
     async with aiohttp.ClientSession(headers={
         'user-key': token['token'],
         'Content-Type': 'application/json'}) as session:
@@ -31,7 +32,7 @@ async def didox_create_doc(config, doc_name):
             },
             "didoxorderid": "",
             "Document": {
-                "DocumentNo": "тест",
+                "DocumentNo": doc_no,
                 "DocumentDate": "2023-06-08",
                 "DocumentName": ""
             },
@@ -47,7 +48,7 @@ async def didox_create_doc(config, doc_name):
                 "Address": "ГОРОД ТАШКЕНТ ЯККАСАРАЙСКИЙ РАЙОН Хамид Сулаймон МФЙ, Глинка кучаси, 41а-уй  "
             },
             "SellerTin": "300974584",
-            "BuyerTin": "302936161"
+            "BuyerTin": doc_inn
         },
             "document": f"data:application/pdf;base64,{encoded_doc}"}) as \
                 response:

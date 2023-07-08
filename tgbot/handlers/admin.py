@@ -36,7 +36,7 @@ async def get_inn_send(m: Message, state: FSMContext, config):
     mes = await m.answer("⏳")
     data = await state.get_data()
     doc = await m.bot.download_file_by_id(data["file"], destination_dir="files")
-    res = await didox_create_doc(config, doc.name, "Shartnoma")
+    res = await didox_create_doc(config, doc.name, "Shartnoma", m.text)
     await mes.edit_text("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
                         "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
                         reply_markup=menu_kb)

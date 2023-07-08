@@ -14,10 +14,18 @@ async def didox_get_token(config):
             print(response)
             return await response.json()
 
+async def get_info(config, inn, token):
+    async with aiohttp.ClientSession(headers={
+        'user-key': token,
+        'Content-Type': 'application/json'}) as session:
+        async with session.get(url=f"{config.misc.didox_inn_url}{inn}") as response:
+            return await response.json()
+
 
 async def didox_create_doc(config, doc_name, doc_no, doc_inn=None):
     token = await didox_get_token(config)
     encoded_doc = str(convert_doc(doc_name), encoding="utf-8")
+    res = await get_info(config, doc_inn, token['token'])
     async with aiohttp.ClientSession(headers={
         'user-key': token['token'],
         'Content-Type': 'application/json'}) as session:
@@ -27,8 +35,8 @@ async def didox_create_doc(config, doc_name, doc_no, doc_inn=None):
                 "DepartmentName": "",
                 "DepartmentTin": "",
                 "TaxGap": None,
-                "Name": "\"VENKON GROUP\" MCHJ",
-                "Address": "Фидойилар МФЙ, Махтумкули кучаси,  "
+                "Name": res["shortName"],
+                "Address": res["address"]
             },
             "didoxorderid": "",
             "Document": {
@@ -42,10 +50,10 @@ async def didox_create_doc(config, doc_name, doc_no, doc_inn=None):
             },
             "Seller": {
                 "TaxGap": None,
-                "Name": "\"WEBMEDIA INFORMATION\" MCHJ",
+                "Name": "«SUPPORT SAMARQAND» MCHJ",
                 "BranchCode": "",
                 "BranchName": "",
-                "Address": "ГОРОД ТАШКЕНТ ЯККАСАРАЙСКИЙ РАЙОН Хамид Сулаймон МФЙ, Глинка кучаси, 41а-уй  "
+                "Address": "ARNASOY KO`CHASI, 1A-UY"
             },
             "SellerTin": "300974584",
             "BuyerTin": doc_inn

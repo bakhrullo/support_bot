@@ -19,6 +19,7 @@ class TgBot:
 class Miscellaneous:
     didox_token_url: str
     didox_url: str
+    didox_inn_url: str
     didox_pass: str
 
 
@@ -44,5 +45,6 @@ def load_config(path: str = None):
         ),
         misc=Miscellaneous(didox_token_url=env.str("DIDOX_TOKEN_URL"),
                            didox_url=env.str("DIDOX_URL"),
+                           didox_inn_url=env.str("DIDOX_INN_URL"),
                            didox_pass=env.str("DIDOX_PASS"))
     )

@@ -52,7 +52,8 @@ async def project(c: CallbackQuery, config):
 
 async def get_project(c: CallbackQuery, state: FSMContext, config):
     counter, agent = await count(config), await get_agent(config, c.from_user.id)
-    number = f"{counter}/{agent['uniq']} от {date.today().strftime('%d.%m.%Y')}"
+    project_db = await get_project_db(config, c.data.split("_")[0])
+    number = f"{counter}/{project_db['uniq']}-{agent['uniq'] if agent['uniq'] is not None else ''} от {date.today().strftime('%d.%m.%Y')}"
     await state.update_data(number=number, name=c.data.split("_")[1], id=c.data.split("_")[0])
     await c.message.edit_text(f"Dogovor raqam olindi ✅\nSizning dogovor raqamingiz:\n\n<b>{number}</b>",
                               reply_markup=contract_conf_kb)

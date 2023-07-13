@@ -41,11 +41,13 @@ async def get_file(m: Message, state: FSMContext):
 
 async def get_inn_send(m: Message, state: FSMContext, config):
     mes = await m.answer("⏳")
-    user = await get_agent(config, m.from_user.id)
     data = await state.get_data()
     doc = await m.bot.download_file_by_id(data["file"], destination_dir="files")
-    await didox_create_doc(config, doc.name, data["type"], m.text)
-    await mes.edit_text("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
+    inn = await didox_create_doc(config, doc.name, data["type"], m.text)
+    if not inn:
+        return await m.answer("Notog'ri inn kiritildi ❌")
+    user = await get_agent(config, m.from_user.id)
+    await m.answer("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
                         "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
                         reply_markup=menu_kb(user["is_boss"]))
     await MainMenu.get_menu.set()
@@ -75,7 +77,11 @@ async def get_conf(c: CallbackQuery):
     await Project.next()
 
 
-async def get_inn(m: Message, state: FSMContext):
+async def get_inn(m: Message, state: FSMContext, config):
+    token = await didox_get_token(config)
+    res = await get_info(config, doc_inn, token['token'])
+    if res["inn"] is None:
+        return m.answer("Notog'ri inn kiritildi ❌")
     data = await state.get_data()
     await m.answer(
         f"Dogovor raqam:\n[{data['number']}]✅\nKorxona INN si:\n[{m.text}]✅\nProekt nomi:\n[{data['name']}]✅\n"
@@ -92,9 +98,9 @@ async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     await create_contract(config, project=data['id'], agent=c.from_user.id, inn=data['inn'], code=data['number'])
     pdf_create(data['number'], c.from_user.id, data['signature'])
     await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
-    await c.message.edit_text("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
-                              "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
-                              reply_markup=menu_kb(user["is_boss"]))
+    await c.message.answer("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
+                           "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
+                            reply_markup=menu_kb(user["is_boss"]))
     await MainMenu.get_menu.set()
 
 

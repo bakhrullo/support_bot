@@ -22,10 +22,12 @@ async def get_info(config, inn, token):
             return await response.json()
 
 
-async def didox_create_doc(config, doc_name, doc_no, doc_inn=None):
+async def didox_create_doc(config, doc_name, doc_no, doc_inn):
     token = await didox_get_token(config)
     encoded_doc = str(convert_doc(doc_name), encoding="utf-8")
     res = await get_info(config, doc_inn, token['token'])
+    if res["inn"] is None:
+        return False
     async with aiohttp.ClientSession(headers={
         'user-key': token['token'],
         'Content-Type': 'application/json'}) as session:

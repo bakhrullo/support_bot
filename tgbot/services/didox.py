@@ -14,6 +14,7 @@ async def didox_get_token(config):
             print(response)
             return await response.json()
 
+
 async def get_info(config, inn, token):
     async with aiohttp.ClientSession(headers={
         'user-key': token,

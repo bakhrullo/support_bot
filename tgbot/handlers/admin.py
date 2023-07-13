@@ -79,7 +79,7 @@ async def get_conf(c: CallbackQuery):
 
 async def get_inn(m: Message, state: FSMContext, config):
     token = await didox_get_token(config)
-    res = await get_info(config, doc_inn, token['token'])
+    res = await get_info(config, m.text, token['token'])
     if res["inn"] is None:
         return await m.answer("Notog'ri inn kiritildi. Iltimos tekshirib qayta kiriting ❌", reply_markup=back_kb)
     data = await state.get_data()

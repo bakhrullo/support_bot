@@ -15,7 +15,7 @@ from tgbot.services.pdf import pdf_create
 
 
 async def start(m: Message, config):
-    user = await get_agent(config, c.from_user.id)
+    user = await get_agent(config, m.from_user.id)
     await m.answer(f"Assalomu alaykum {m.from_user.full_name} 👋\n"
                    f"Sizni Supprot Samarkand Botida ko'rib turganimizdan mamnunmiz\n\n"
                    f"Iltimos pastdagi tugmalar orqali kerakli bo'limni tanlang👇", reply_markup=menu_kb(user["is_boss"]))
@@ -41,7 +41,7 @@ async def get_file(m: Message, state: FSMContext):
 
 async def get_inn_send(m: Message, state: FSMContext, config):
     mes = await m.answer("⏳")
-    user = await get_agent(config, c.from_user.id)
+    user = await get_agent(config, m.from_user.id)
     data = await state.get_data()
     doc = await m.bot.download_file_by_id(data["file"], destination_dir="files")
     await didox_create_doc(config, doc.name, data["type"], m.text)
@@ -114,7 +114,7 @@ async def get_check_contract(c: CallbackQuery, state: FSMContext):
 
 async def get_check_inn(m: Message, state: FSMContext, config):
     data = await state.get_data()
-    user = await get_agent(config, c.from_user.id)
+    user = await get_agent(config, m.from_user.id)
     res = await check_contract(config, project=data["id"], inn=m.text)
     if res["status"] == "Not Found":
         await m.answer("Ushbu korxonada tuzilgan dogovorlar topilmadi ❌", reply_markup=menu_kb(user["is_boss"]))

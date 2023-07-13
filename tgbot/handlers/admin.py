@@ -40,12 +40,12 @@ async def get_file(m: Message, state: FSMContext):
 
 
 async def get_inn_send(m: Message, state: FSMContext, config):
-    mes = await m.answer("⏳")
+    await m.answer("⏳")
     data = await state.get_data()
     doc = await m.bot.download_file_by_id(data["file"], destination_dir="files")
     inn = await didox_create_doc(config, doc.name, data["type"], m.text)
     if not inn:
-        return await m.answer("Notog'ri inn kiritildi ❌")
+        return await m.answer("Notog'ri inn kiritildi. Iltimos tekshirib qayta kiriting ❌", reply_markup=back_kb)
     user = await get_agent(config, m.from_user.id)
     await m.answer("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
                         "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
@@ -81,7 +81,7 @@ async def get_inn(m: Message, state: FSMContext, config):
     token = await didox_get_token(config)
     res = await get_info(config, doc_inn, token['token'])
     if res["inn"] is None:
-        return m.answer("Notog'ri inn kiritildi ❌")
+        return await m.answer("Notog'ri inn kiritildi. Iltimos tekshirib qayta kiriting ❌", reply_markup=back_kb)
     data = await state.get_data()
     await m.answer(
         f"Dogovor raqam:\n[{data['number']}]✅\nKorxona INN si:\n[{m.text}]✅\nProekt nomi:\n[{data['name']}]✅\n"

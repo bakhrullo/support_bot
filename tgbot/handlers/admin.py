@@ -10,7 +10,7 @@ from tgbot.filters.back import BackFilter
 from tgbot.keyboards.inline import *
 from tgbot.misc.states import MainMenu, Project, Check, Certificate, Send
 from tgbot.services.counter import count
-from tgbot.services.didox import didox_create_doc, didox_get_token
+from tgbot.services.didox import didox_create_doc, didox_get_token, get_info
 from tgbot.services.pdf import pdf_create
 
 

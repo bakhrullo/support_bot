@@ -2,7 +2,7 @@ from fpdf import FPDF
 from datetime import date
 
 
-def pdf_create(number, name, types):
+def pdf_create(number, name, signature):
     pdf = FPDF("P", "mm", "Legal")
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -91,7 +91,7 @@ def pdf_create(number, name, types):
     
             ПОСТАВЩИК                                                                                 ПОКУПАТЕЛЬ 
     ООО «SUPPORT SAMARQAND»                                      ____________________________________
-    {types}                                Адрес:______________________________
+    {signature}                                Адрес:______________________________
                                                                   ____________________________________
                                              Р/сч ________________________________
                                                                         МФО _______________________________

@@ -6,6 +6,7 @@ class MainMenu(StatesGroup):
 
 
 class Send(StatesGroup):
+    get_type = State()
     get_file = State()
     get_inn = State()
 

@@ -14,7 +14,7 @@ from tgbot.services.didox import didox_create_doc
 from tgbot.services.pdf import pdf_create
 
 
-async def start(m: Message):
+async def start(m: Message, config):
     user = await get_agent(config, c.from_user.id)
     await m.answer(f"Assalomu alaykum {m.from_user.full_name} 👋\n"
                    f"Sizni Supprot Samarkand Botida ko'rib turganimizdan mamnunmiz\n\n"

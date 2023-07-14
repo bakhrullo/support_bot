@@ -48,7 +48,7 @@ async def get_inn_send(m: Message, state: FSMContext, config):
     if not inn:
         return await m.answer("Notog'ri inn kiritildi. Iltimos tekshirib qayta kiriting ❌", reply_markup=back_kb)
     user = await get_agent(config, m.from_user.id)
-    await c.bot.send_document(caht_id=config.tgbot.channel_id, document=data["file"],
+    await m.bot.send_document(caht_id=config.tgbot.channel_id, document=data["file"],
                               caption=f"{data['type']}✅\nKorxona INN si:\n[{m.text}]✅\n")
     await m.answer("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
                    "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",

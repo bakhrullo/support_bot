@@ -4,11 +4,12 @@ from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, CallbackQuery
+from aiogram.types import InputFile
 
-from tgbot.db.db_api import get_projects, get_agent, create_contract, check_contract, get_project_db
+from tgbot.db.db_api import get_projects, get_agent, create_contract, check_contract, get_project_db, get_contracts
 from tgbot.filters.back import BackFilter
 from tgbot.keyboards.inline import *
-from tgbot.misc.states import MainMenu, Project, Check, Certificate, Send
+from tgbot.misc.states import MainMenu, Project, Check, Certificate, Send, History
 from tgbot.services.counter import count
 from tgbot.services.didox import didox_create_doc, didox_get_token, get_info
 from tgbot.services.pdf import pdf_create
@@ -47,9 +48,11 @@ async def get_inn_send(m: Message, state: FSMContext, config):
     if not inn:
         return await m.answer("Notog'ri inn kiritildi. Iltimos tekshirib qayta kiriting ❌", reply_markup=back_kb)
     user = await get_agent(config, m.from_user.id)
+    await c.bot.send_document(caht_id=config.tgbot.channel_id, document=data["file"],
+                              caption=f"{data['type']}✅\nKorxona INN si:\n[{m.text}]✅\n")
     await m.answer("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
-                        "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
-                        reply_markup=menu_kb(user["is_boss"]))
+                   "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
+                   reply_markup=menu_kb(user["is_boss"]))
     await MainMenu.get_menu.set()
 
 
@@ -98,10 +101,27 @@ async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     await create_contract(config, project=data['id'], agent=c.from_user.id, inn=data['inn'], code=data['number'])
     pdf_create(data['number'], c.from_user.id, data['signature'])
     await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
+    await c.bot.send_document(caht_id=config.tgbot.channel_id, document=InputFile(f"{c.from_user.id}.pdf"), caption=
+    f"Dogovor raqam:\n[{data['number']}]✅\nKorxona INN si:\n[{data['inn']}]✅\nProekt nomi:\n[{data['name']}")
     await c.message.answer("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
                            "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
-                            reply_markup=menu_kb(user["is_boss"]))
+                           reply_markup=menu_kb(user["is_boss"]))
     await MainMenu.get_menu.set()
+
+
+async def history(c: CallbackQuery, config):
+    projects = await get_projects(c.from_user.id, config)
+    await c.message.edit_text(f"Sizda {len(projects)} ta proekt mavjud 📋\nQaysi birini tanalysiz?",
+                              reply_markup=contracts_kb(projects))
+    await History.get_contract.set()
+
+
+async def get_history_projects(c: CallbackQuery, config):
+    res = await get_contracts(c.from_user.id, config)
+    text = ""
+    for i in res:
+        text += f"📄 Dogovor raqam: {i['code']}\n🗂 Korxona INN si: {i['inn']}\n📅 Tuzilgan sana: {i['created_at'][0:10]}"
+    await c.message.edit_text(text, reply_markup=back_kb)
 
 
 async def check(c: CallbackQuery, config):
@@ -127,7 +147,8 @@ async def get_check_inn(m: Message, state: FSMContext, config):
     elif res["status"]:
         await m.answer("Ushbu do'konda imzolanmay\nqolgan shartnoma mavjud emas", reply_markup=menu_kb(user["is_boss"]))
     elif not res["status"]:
-        await m.answer(f"Ushbu do'kon uchun {res['number']} shartnoma imzolanmay qolgan", reply_markup=menu_kb(user["is_boss"]))
+        await m.answer(f"Ushbu do'kon uchun {res['number']} shartnoma imzolanmay qolgan",
+                       reply_markup=menu_kb(user["is_boss"]))
     return await MainMenu.get_menu.set()
 
 
@@ -160,7 +181,9 @@ def register_admin(dp: Dispatcher):
     dp.register_callback_query_handler(send, Text(equals="send"), state=MainMenu.get_menu, is_admin=True)
     dp.register_callback_query_handler(get_type, BackFilter(), state=Send.get_type, is_admin=True)
     dp.register_callback_query_handler(check, Text(equals="check"), state=MainMenu.get_menu, is_admin=True)
-    dp.register_callback_query_handler(certificate, Text(equals="Certificate"), state=MainMenu.get_menu, is_admin=True)
+    dp.register_callback_query_handler(history, Text(equals="history"), state=MainMenu.get_menu, is_admin=True)
+    dp.register_callback_query_handler(get_history_projects, state=History.get_contract, is_admin=True)
+    dp.register_callback_query_handler(certificate, Text(equals="certificate"), state=MainMenu.get_menu, is_admin=True)
     dp.register_message_handler(get_file, state=Send.get_file, is_admin=True, content_types="document")
     dp.register_message_handler(get_inn_send, state=Send.get_inn, is_admin=True)
     dp.register_callback_query_handler(get_certificate, BackFilter(), state=Certificate.get_certificate, is_admin=True)

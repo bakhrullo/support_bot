@@ -8,8 +8,9 @@ back_kb = InlineKeyboardMarkup(row_width=1).add(InlineKeyboardButton("Orqaga �
 def menu_kb(is_boss):
     menu_btn = InlineKeyboardMarkup(row_width=1).add(
         InlineKeyboardButton("Dogovor raqam olish 🔗", callback_data="contract"),
-        InlineKeyboardButton("Sertifikat olish 📄", callback_data="Certificate"),
-        InlineKeyboardButton("Joriy shartnomani tekshirish ☑️", callback_data="check"))
+        InlineKeyboardButton("Sertifikat olish 📄", callback_data="certificate"),
+        InlineKeyboardButton("Joriy shartnomani tekshirish ☑️", callback_data="check"),
+        InlineKeyboardButton("Shartnomalar tarixi ⏳", callback_data="history"))
     if is_boss:
         menu_btn.add(InlineKeyboardButton("Shartnoma yuborish 📧", callback_data="send"))
     return menu_btn

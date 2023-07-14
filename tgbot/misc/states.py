@@ -24,5 +24,9 @@ class Check(StatesGroup):
     get_last_conf = State()
 
 
+class History(StatesGroup):
+    get_contract = State()
+
+
 class Certificate(StatesGroup):
     get_certificate = State()

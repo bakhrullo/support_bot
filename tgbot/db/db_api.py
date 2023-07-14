@@ -8,6 +8,13 @@ async def get_projects(user_id, config):
             return await response.json()
 
 
+async def get_contracts(user_id, config):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=f"{config.db.db_url}contract/get", params={"id": user_id}) as \
+                response:
+            return await response.json()
+
+
 async def get_project_db(project, config):
     async with aiohttp.ClientSession() as session:
         async with session.get(url=f"{config.db.db_url}project/{project}") as \
@@ -33,9 +40,9 @@ async def get_count(config):
             return await response.json()
 
 
-async def update_count(config, day):
+async def update_count(config, year):
     async with aiohttp.ClientSession() as session:
-        async with session.get(url=f"{config.db.db_url}count/update", params={"day": day}) as response:
+        async with session.get(url=f"{config.db.db_url}count/update", params={"year": year}) as response:
             return await response.json()
 
 

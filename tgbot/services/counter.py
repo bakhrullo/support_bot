@@ -4,8 +4,7 @@ from datetime import datetime
 
 async def count(config):
     res = await get_count(config)
-    print(res)
-    if res["day"] == int(datetime.now().strftime("%d")):
+    if res["year"] == int(datetime.now().strftime("%Y")):
         return res["count"]
-    await update_count(config, day=datetime.now().strftime("%d"))
+    await update_count(config, year=datetime.now().strftime("%Y"))
     return 1

@@ -118,6 +118,8 @@ async def history(c: CallbackQuery, config):
 
 async def get_history_projects(c: CallbackQuery, config):
     res = await get_contracts(c.from_user.id, config)
+    if len(res) == 0:
+        return await c.answer("Tuzilgan dogovorlar topilmadi ❌")
     text = ""
     for i in res:
         text += f"📄 Dogovor raqam: {i['code']}\n🗂 Korxona INN si: {i['inn']}\n📅 Tuzilgan sana: {i['created_at'][0:10]}"

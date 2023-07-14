@@ -49,7 +49,7 @@ async def get_inn_send(m: Message, state: FSMContext, config):
         return await m.answer("Notog'ri inn kiritildi. Iltimos tekshirib qayta kiriting ❌", reply_markup=back_kb)
     user = await get_agent(config, m.from_user.id)
     await m.bot.send_document(chat_id=config.tg_bot.channel_id, document=data["file"],
-                              caption=f"{data['type']}✅\nKorxona INN si:\n[{m.text}]✅\n")
+                              caption=f"👤 Agent: {user['uniq']}\n📃 Shartnoma turi: {data['type']}\n🗂 Korxona INN si: {m.text}\n")
     await m.answer("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
                    "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
                    reply_markup=menu_kb(user["is_boss"]))
@@ -102,7 +102,7 @@ async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     pdf_create(data['number'], c.from_user.id, data['signature'])
     await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
     await c.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{c.from_user.id}.pdf"), caption=
-    f"Dogovor raqam:\n[{data['number']}]✅\nKorxona INN si:\n[{data['inn']}]✅\nProekt nomi:\n[{data['name']}")
+        f"👤Agent: {user['uniq']}\n🆔 Dogovor raqam: {data['number']}\n🗂 Korxona INN si: {data['inn']}\n📃 Proekt nomi: {data['name']}")
     await c.message.answer("Dogovor muvofaqqiyatli qabul qilindi ✅\n"
                            "Botni ishlatishni davom ettirish uchun pastdagi tugmachalardan foydalaning 👇",
                            reply_markup=menu_kb(user["is_boss"]))

@@ -122,7 +122,7 @@ async def get_history_projects(c: CallbackQuery, config):
         return await c.answer("Tuzilgan dogovorlar topilmadi ❌")
     text = ""
     for i in res:
-        text += f"📄 Dogovor raqam: {i['code']}\n🗂 Korxona INN si: {i['inn']}\n📅 Tuzilgan sana: {i['created_at'][0:10]}"
+        text += f"📄 Dogovor raqam: {i['code']}\n🗂 Korxona INN si: {i['inn']}\n📅 Tuzilgan sana: {i['created_at'][0:10]}\n\n"
     await c.message.edit_text(text, reply_markup=back_kb)
 
 
@@ -184,7 +184,7 @@ def register_admin(dp: Dispatcher):
     dp.register_callback_query_handler(get_type, BackFilter(), state=Send.get_type, is_admin=True)
     dp.register_callback_query_handler(check, Text(equals="check"), state=MainMenu.get_menu, is_admin=True)
     dp.register_callback_query_handler(history, Text(equals="history"), state=MainMenu.get_menu, is_admin=True)
-    dp.register_callback_query_handler(get_history_projects, state=History.get_contract, is_admin=True)
+    dp.register_callback_query_handler(get_history_projects, BackFilter(), state=History.get_contract, is_admin=True)
     dp.register_callback_query_handler(certificate, Text(equals="certificate"), state=MainMenu.get_menu, is_admin=True)
     dp.register_message_handler(get_file, state=Send.get_file, is_admin=True, content_types="document")
     dp.register_message_handler(get_inn_send, state=Send.get_inn, is_admin=True)

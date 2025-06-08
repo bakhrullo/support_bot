@@ -51,7 +51,7 @@ async def get_inn_send(m: Message, state: FSMContext, config):
         return await m.answer("Введён неверный ИНН. Пожалуйста, проверьте и введите заново ❌", reply_markup=back_kb)
     user = await get_agent(config, m.from_user.id)
     await m.bot.send_document(chat_id=config.tg_bot.channel_id, document=data["file"],
-                              caption=f"👤 Агент: {user['uniq']}\n📃 Тип договора: {data['type']}\n🗂 ИНН организации: {m.text}\n")
+                              caption=f"👤 Агент: {user['name']}\n🆔 Номер агента: {user['uniq']}\n📃 Тип договора: {data['type']}\n🗂 ИНН организации: {m.text}\n")
     await m.answer("Договор успешно принят ✅\n"
                    "Для продолжения работы с ботом используйте кнопки ниже 👇",
                    reply_markup=menu_kb(user["is_boss"]))

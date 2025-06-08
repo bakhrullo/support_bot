@@ -1,28 +1,27 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-back_btn = InlineKeyboardButton("Orqaga 🔙", callback_data="back")
+back_btn = InlineKeyboardButton("Назад 🔙", callback_data="back")
 
-back_kb = InlineKeyboardMarkup(row_width=1).add(InlineKeyboardButton("Orqaga 🔙", callback_data="backs"))
-
+back_kb = InlineKeyboardMarkup(row_width=1).add(InlineKeyboardButton("Назад 🔙", callback_data="backs"))
 
 def menu_kb(is_boss):
     menu_btn = InlineKeyboardMarkup(row_width=1).add(
-        InlineKeyboardButton("Dogovor raqam olish 🔗", callback_data="contract"),
-        InlineKeyboardButton("Sertifikat olish 📄", callback_data="certificate"),
-        InlineKeyboardButton("Joriy shartnomani tekshirish ☑️", callback_data="check"),
-        InlineKeyboardButton("Shartnomalar tarixi ⏳", callback_data="history"))
+        InlineKeyboardButton("Получить номер договора 🔗", callback_data="contract"),
+        InlineKeyboardButton("Получить сертификат 📄", callback_data="certificate"),
+        InlineKeyboardButton("Проверить текущий договор ☑️", callback_data="check"),
+        InlineKeyboardButton("История договоров ⏳", callback_data="history"))
     if is_boss:
-        menu_btn.add(InlineKeyboardButton("Shartnoma yuborish 📧", callback_data="send"))
+        menu_btn.add(InlineKeyboardButton("Отправить договор 📧", callback_data="send"))
     return menu_btn
 
 
 contract_conf_kb = InlineKeyboardMarkup(row_width=1).add(
-    InlineKeyboardButton("Tasdiqlash ✅", callback_data="confirm"),
-    InlineKeyboardButton("Bekor qilish ❌", callback_data="back"))
+    InlineKeyboardButton("Подтвердить ✅", callback_data="confirm"),
+    InlineKeyboardButton("Отменить ❌", callback_data="back"))
 
 type_kb = InlineKeyboardMarkup(row_width=1).add(
-    InlineKeyboardButton("Аксиверка", callback_data="Аксиверка"),
-    InlineKeyboardButton("Доп соглашения", callback_data="Доп соглашения"),
+    InlineKeyboardButton("Акт сверка", callback_data="Акт сверка"),
+    InlineKeyboardButton("Доп соглашение", callback_data="Доп соглашение"),
     InlineKeyboardButton("Договор", callback_data="Договор"),
     InlineKeyboardButton("Сертификат", callback_data="Сертификат"),
     InlineKeyboardButton("Спецификация", callback_data="Спецификация"),

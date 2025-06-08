@@ -1,5 +1,6 @@
 import aiohttp
 import base64
+from datetime import date
 
 
 def convert_doc(name):
@@ -11,7 +12,6 @@ async def didox_get_token(config):
     async with aiohttp.ClientSession() as session:
         async with session.post(url=config.misc.didox_token_url, data={"password": config.misc.didox_pass}) as \
                 response:
-            print(response)
             return await response.json()
 
 
@@ -44,7 +44,7 @@ async def didox_create_doc(config, doc_name, doc_no, doc_inn):
             "didoxorderid": "",
             "Document": {
                 "DocumentNo": doc_no,
-                "DocumentDate": "2023-06-08",
+                "DocumentDate": f"{date.today().strftime('%Y-%m-%d')}",
                 "DocumentName": ""
             },
             "ContractDoc": {

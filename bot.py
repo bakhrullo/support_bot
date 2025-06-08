@@ -8,6 +8,7 @@ from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from tgbot.config import load_config
 from tgbot.filters.admin import AdminFilter
 from tgbot.filters.back import BackFilter
+from tgbot.filters.day import WeekdayFilter
 from tgbot.handlers.admin import register_admin
 from tgbot.handlers.echo import register_echo
 from tgbot.middlewares.environment import EnvironmentMiddleware
@@ -25,12 +26,13 @@ def register_all_middlewares(dp, config):
 def register_all_filters(dp):
     dp.filters_factory.bind(AdminFilter)
     dp.filters_factory.bind(BackFilter)
+    dp.filters_factory.bind(WeekdayFilter)
 
 
 def register_all_handlers(dp):
     register_admin(dp)
-    if DEBUG:
-        register_echo(dp)
+    # if DEBUG:
+    #     register_echo(dp)
 
 
 async def main():

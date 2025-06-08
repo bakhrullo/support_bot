@@ -36,7 +36,7 @@ async def get_agent(config, user_id):
 
 async def get_count(config):
     async with aiohttp.ClientSession() as session:
-        async with session.get(url=f"{config.db.db_url}count/1") as response:
+        async with session.get(url=f"{config.db.db_url}count") as response:
             return await response.json()
 
 
@@ -51,6 +51,7 @@ async def create_contract(config, **kwargs):
         async with session.post(url=f"{config.db.db_url}contract", data={"project": kwargs["project"],
                                                                          "agent": kwargs["agent"],
                                                                          "inn": kwargs["inn"],
+                                                                         "firm": kwargs["firm"],
                                                                          "code": kwargs["code"]}) as response:
             return await response.json()
 

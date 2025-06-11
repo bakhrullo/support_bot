@@ -303,7 +303,7 @@ def pdf_create_special(number, name, signature, company_info, doc_type):
              f"{company_info['director']}"]
 
     max_lines = max(len(sign), len(buyer))
-    block_height = max_lines * line_height + 190# +20 — на заголовок
+    block_height = max_lines * line_height + 180# +20 — на заголовок
     bottom_margin = 10
     y = pdf.h - block_height - bottom_margin
     for i in range(max_lines):

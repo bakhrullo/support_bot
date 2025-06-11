@@ -10,14 +10,13 @@ from tgbot.db.db_api import get_projects, get_agent, create_contract, check_cont
 from tgbot.filters.back import BackFilter
 from tgbot.filters.day import WeekdayFilter
 from tgbot.keyboards.inline import *
-from tgbot.misc.states import MainMenu, Project, Check, Certificate, Send, History
+from tgbot.misc.states import MainMenu, Project, Check, Certificate, Send, History, Percent
 from tgbot.services.counter import count
 from tgbot.services.didox import didox_create_doc, didox_get_token, get_info
-from tgbot.services.pdf import pdf_create
+from tgbot.services.pdf import pdf_create, pdf_create_percent, pdf_create_special
 
 
 async def start(m: Message, config):
-    print(config)
     user = await get_agent(config, m.from_user.id)
     await m.answer(f"Здравствуйте, {m.from_user.full_name} 👋\n"
                    f"Рады видеть вас в боте Support Samarkand\n\n"
@@ -66,15 +65,25 @@ async def project(c: CallbackQuery, config):
 
 
 async def get_project(c: CallbackQuery, state: FSMContext, config):
-    counter, agent = await count(config), await get_agent(config, c.from_user.id)
     project_db = await get_project_db(c.data.split("_")[0], config)
+    counter, agent = await count(config), await get_agent(config, c.from_user.id)
     key = f"-{agent['uniq']}"
     number = f"{counter}/{project_db['uniq']}{key if agent['uniq'] is not None else ''}"
     await state.update_data(number=number, name=c.data.split("_")[1], id=c.data.split("_")[0],
-                            signature=project_db["signature"])
+                            signature=project_db["signature"], is_special=project_db["is_special"])
+    if project_db["is_special"]:
+        await Project.next()
+        return await c.message.edit_text(f"Номер договора получен ✅\nВаш номер договора:\n<b>{number}</b>"
+                                         f"\nВыберите тип договора 📑", reply_markup=doc_type_kb)
     await c.message.edit_text(f"Номер договора получен ✅\nВаш номер договора:\n\n<b>{number}</b>",
                               reply_markup=contract_conf_kb)
-    await Project.next()
+    await Project.get_conf.set()
+
+
+async def get_doc_type(c: CallbackQuery, state: FSMContext):
+    await state.update_data(doc_pdf=c.data)
+    await c.message.edit_text("Пожалуйста, введите ИНН организации, с которой заключается договор ✍️")
+    await Project.get_inn.set()
 
 
 async def get_conf(c: CallbackQuery):
@@ -88,10 +97,10 @@ async def get_inn(m: Message, state: FSMContext, config):
     if res["inn"] is None:
         return await m.answer("Введён неверный ИНН. Пожалуйста, проверьте и введите заново ❌", reply_markup=back_kb)
     data = await state.get_data()
-    await m.answer(
-        f"Номер договора:\n[{data['number']}]✅\nИНН организации:\n[{m.text}]✅\nНазвание фирмы:\n[{res['shortName']}]✅\nНазвание проекта:\n[{data['name']}]✅\n"
-        f"Для подтверждения используйте кнопки ниже 👇",
-        reply_markup=contract_conf_kb)
+    text = f"Номер договора:\n[{data['number']}]✅\nИНН организации:\n[{m.text}]✅\nНазвание фирмы:\n[{res['shortName']}]✅\nНазвание проекта:\n[{data['name']}]✅\n"
+    if data["is_special"]:
+        text += f"Тип документа[{data['doc_pdf']}]✅\n"
+    await m.answer(text, reply_markup=contract_conf_kb)
     await state.update_data(inn=m.text, company_info=res)
     await Project.next()
 
@@ -100,14 +109,19 @@ async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     await c.message.edit_text("⏳")
     data = await state.get_data()
     user = await get_agent(config, c.from_user.id)
-    await create_contract(config, project=data['id'], agent=user['id'], firm=data['company_info']['shortName'], inn=data['inn'], code=data['number'])
-    pdf_create(data['number'], c.from_user.id, data['signature'], data['company_info'])
-    await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
-    await c.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{c.from_user.id}.pdf"), caption=
-    f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}")
+    text =f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}"
+    # await create_contract(config, project=data['id'], agent=user['id'], firm=data['company_info']['shortName'],
+    #                       inn=data['inn'], code=data['number'])
+    if data["is_special"]:
+        text += f"\n📑 Тип документа: {data['doc_pdf']}"
+        pdf_create_special(data['number'], c.from_user.id, data['signature'], data['company_info'], data['doc_pdf'])
+    else:
+        pdf_create(data['number'], c.from_user.id, data['signature'], data['company_info'])
+    # await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
+    await c.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{c.from_user.id}.pdf"), caption=text)
     await c.message.edit_text("Договор успешно принят ✅\n"
-                           "Для продолжения работы с ботом используйте кнопки ниже 👇",
-                           reply_markup=menu_kb(user["is_boss"]))
+                              "Для продолжения работы с ботом используйте кнопки ниже 👇",
+                              reply_markup=menu_kb(user["is_boss"]))
     await MainMenu.get_menu.set()
 
 
@@ -171,9 +185,78 @@ async def get_certificate(c: CallbackQuery, config):
     await c.message.answer_document(document=certificate_project["file"], reply_markup=back_kb)
 
 
+async def percent(c: CallbackQuery, config):
+    projects = await get_projects(c.from_user.id, config)
+    await c.message.edit_text(f"У вас {len(projects)} проектов 📋\nС каким из них хотите заключить договор?",
+                              reply_markup=contracts_kb(projects, True))
+    await Percent.get_project.set()
+
+
+async def percent_get_project(c: CallbackQuery, state: FSMContext):
+    await state.update_data(project_id=c.data.split("_")[0], project_uniq=c.data.split("_")[1],
+                            project_name=c.data.split("_")[2])
+    await c.message.edit_text("Отправьте процентную ставку %")
+    await Percent.next()
+
+
+async def get_percent(m: Message, state: FSMContext):
+    if not m.text.isdigit():
+        return await m.answer("Пожалуйста отправьте число! ❌")
+    if not 1 <= int(m.text) <= 99:
+        return await m.answer("Процент должен быть в районе от 1 до 99 ! ❌")
+    await state.update_data(percent=m.text)
+    await m.answer("Отправьте срок 📅")
+    await Percent.next()
+
+
+async def get_day(m: Message, state: FSMContext):
+    if not m.text.isdigit():
+        return await m.answer("Пожалуйста отправьте число! ❌")
+    await state.update_data(day=m.text)
+    await m.answer("Пожалуйста, введите ИНН организации, с которой заключается договор ✍️")
+    await Percent.next()
+
+
+async def get_inn_percent(m: Message, state: FSMContext, config):
+    token = await didox_get_token(config)
+    res = await get_info(config, m.text, token['token'])
+    try:
+        if res["inn"] is None:
+            return await m.answer("Введён неверный ИНН. Пожалуйста, проверьте и введите заново ❌", reply_markup=back_kb)
+    except:
+        return await m.answer("Введён неверный ИНН. Пожалуйста, проверьте и введите заново ❌", reply_markup=back_kb)
+    counter, agent = await count(config), await get_agent(config, m.from_user.id)
+    data = await state.get_data()
+    key = f"-{agent['uniq']}"
+    number = f"{counter}/{data['project_uniq']}{key if agent['uniq'] is not None else ''}"
+    await m.answer(
+        f"Номер договора:\n[{number}]✅\nИНН организации:\n[{m.text}]✅\nНазвание фирмы:\n[{res['shortName']}]✅\nНазвание проекта:\n[{data['project_name']}]✅\n"
+        f"Для подтверждения используйте кнопки ниже 👇",
+        reply_markup=contract_conf_kb)
+    await state.update_data(inn=m.text, company_info=res, number=number)
+    await Percent.next()
+
+
+async def get_percent_confirm(c: CallbackQuery, state: FSMContext, config):
+    await c.message.edit_text("⏳")
+    data = await state.get_data()
+    user = await get_agent(config, c.from_user.id)
+    await create_contract(config, project=data['project_id'], agent=user['id'],
+                          firm=data['company_info']['shortName'], inn=data['inn'], code=data['number'])
+    pdf_create_percent(data['number'], c.from_user.id, data['signature'], data['company_info'], data['percent'],
+                       data['day'])
+    await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
+    await c.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{c.from_user.id}.pdf"), caption=
+    f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}")
+    await c.message.edit_text("Договор успешно принят ✅\n"
+                              "Для продолжения работы с ботом используйте кнопки ниже 👇",
+                              reply_markup=menu_kb(user["is_boss"]))
+    await MainMenu.get_menu.set()
+
+
 async def back(c: CallbackQuery, state: FSMContext, config):
     user = await get_agent(config, c.from_user.id)
-    if str(await state.get_state()) == "Project:get_conf":
+    if str(await state.get_state()) == "Project:get_conf" or "Project.get_doc_type":
         data = await state.get_data()
         await c.bot.send_message(config.tg_bot.channel_id, f"Договор по номеру {data['number']} аннулирован")
     await c.message.delete()
@@ -185,7 +268,20 @@ def register_admin(dp: Dispatcher):
     dp.register_message_handler(start, WeekdayFilter(allow_weekdays=True), commands=["start"], state="*", is_admin=True)
     dp.register_callback_query_handler(project, WeekdayFilter(allow_weekdays=True), Text(equals="contract"),
                                        state=MainMenu.get_menu, is_admin=True)
-    dp.register_callback_query_handler(send, WeekdayFilter(allow_weekdays=True), WeekdayFilter(allow_weekdays=True),
+    dp.register_callback_query_handler(percent, WeekdayFilter(allow_weekdays=True), Text(equals="percent"),
+                                       state=MainMenu.get_menu, is_admin=True)
+    dp.register_callback_query_handler(percent_get_project, WeekdayFilter(allow_weekdays=True),
+                                       state=Percent.get_project, is_admin=True)
+    dp.register_message_handler(get_percent, WeekdayFilter(allow_weekdays=True), state=Percent.get_percent,
+                                is_admin=True)
+    dp.register_message_handler(get_day, WeekdayFilter(allow_weekdays=True), state=Percent.get_day, is_admin=True)
+    dp.register_message_handler(get_inn_percent, WeekdayFilter(allow_weekdays=True), state=Percent.get_inn,
+                                is_admin=True)
+    dp.register_callback_query_handler(get_percent_confirm, WeekdayFilter(allow_weekdays=True),
+                                       state=Percent.get_last_conf, is_admin=True)
+    dp.register_callback_query_handler(get_doc_type, WeekdayFilter(allow_weekdays=True), BackFilter(),
+                                       state=Project.get_doc_type, is_admin=True)
+    dp.register_callback_query_handler(send, WeekdayFilter(allow_weekdays=True),
                                        Text(equals="send"), state=MainMenu.get_menu, is_admin=True)
     dp.register_callback_query_handler(get_type, WeekdayFilter(allow_weekdays=True), BackFilter(), state=Send.get_type,
                                        is_admin=True)

@@ -13,7 +13,16 @@ class Send(StatesGroup):
 
 class Project(StatesGroup):
     get_project = State()
+    get_doc_type = State()
     get_conf = State()
+    get_inn = State()
+    get_last_conf = State()
+
+
+class Percent(StatesGroup):
+    get_project = State()
+    get_percent = State()
+    get_day = State()
     get_inn = State()
     get_last_conf = State()
 

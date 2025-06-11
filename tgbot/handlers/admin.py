@@ -110,14 +110,14 @@ async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     data = await state.get_data()
     user = await get_agent(config, c.from_user.id)
     text =f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}"
-    # await create_contract(config, project=data['id'], agent=user['id'], firm=data['company_info']['shortName'],
-    #                       inn=data['inn'], code=data['number'])
+    await create_contract(config, project=data['id'], agent=user['id'], firm=data['company_info']['shortName'],
+                          inn=data['inn'], code=data['number'])
     if data["is_special"]:
         text += f"\n📑 Тип документа: {data['doc_pdf']}"
         pdf_create_special(data['number'], c.from_user.id, data['signature'], data['company_info'], data['doc_pdf'])
     else:
         pdf_create(data['number'], c.from_user.id, data['signature'], data['company_info'])
-    # await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
+    await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
     await c.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{c.from_user.id}.pdf"), caption=text)
     await c.message.edit_text("Договор успешно принят ✅\n"
                               "Для продолжения работы с ботом используйте кнопки ниже 👇",

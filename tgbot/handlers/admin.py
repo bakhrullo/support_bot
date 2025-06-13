@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
@@ -97,7 +97,7 @@ async def get_inn(m: Message, state: FSMContext, config):
     if res["inn"] is None:
         return await m.answer("Введён неверный ИНН. Пожалуйста, проверьте и введите заново ❌", reply_markup=back_kb)
     data = await state.get_data()
-    text = f"Номер договора:\n[{data['number']}]✅\nИНН организации:\n[{m.text}]✅\nНазвание фирмы:\n[{res['shortName']}]✅\nНазвание проекта:\n[{data['name']}]✅\n"
+    text = f"Номер договора:\n[{data['number']} от {datetime.now().strftime('%d.%m.%Y')}]✅\nИНН организации:\n[{m.text}]✅\nНазвание фирмы:\n[{res['shortName']}]✅\nНазвание проекта:\n[{data['name']}]✅\n"
     if data["is_special"]:
         text += f"Тип документа[{data['doc_pdf']}]✅\n"
     await m.answer(text, reply_markup=contract_conf_kb)
@@ -109,7 +109,7 @@ async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     await c.message.edit_text("⏳")
     data = await state.get_data()
     user = await get_agent(config, c.from_user.id)
-    text =f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}"
+    text =f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']} от {datetime.now().strftime('%d.%m.%Y')}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}"
     await create_contract(config, project=data['id'], agent=user['id'], firm=data['company_info']['shortName'],
                           inn=data['inn'], code=data['number'])
     if data["is_special"]:
@@ -230,7 +230,7 @@ async def get_inn_percent(m: Message, state: FSMContext, config):
     key = f"-{agent['uniq']}"
     number = f"{counter}/{data['project_uniq']}{key if agent['uniq'] is not None else ''}"
     await m.answer(
-        f"Номер договора:\n[{number}]✅\nИНН организации:\n[{m.text}]✅\nНазвание фирмы:\n[{res['shortName']}]✅\nНазвание проекта:\n[{data['project_name']}]✅\n"
+        f"Номер договора:\n[{number} от {datetime.now().strftime('%d.%m.%Y')}]✅\nИНН организации:\n[{m.text}]✅\nНазвание фирмы:\n[{res['shortName']}]✅\nНазвание проекта:\n[{data['project_name']}]✅\n"
         f"Для подтверждения используйте кнопки ниже 👇",
         reply_markup=contract_conf_kb)
     await state.update_data(inn=m.text, company_info=res, number=number)
@@ -247,7 +247,7 @@ async def get_percent_confirm(c: CallbackQuery, state: FSMContext, config):
                        data['day'])
     await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
     await c.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{c.from_user.id}.pdf"), caption=
-    f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}")
+    f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']} от {datetime.now().strftime('%d.%m.%Y')}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}")
     await c.message.edit_text("Договор успешно принят ✅\n"
                               "Для продолжения работы с ботом используйте кнопки ниже 👇",
                               reply_markup=menu_kb(user["is_boss"]))

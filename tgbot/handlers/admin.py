@@ -109,7 +109,7 @@ async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     await c.message.edit_text("⏳")
     data = await state.get_data()
     user = await get_agent(config, c.from_user.id)
-    text =f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']} от {datetime.now().strftime('%d.%m.%Y')}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}"
+    text = f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']} от {datetime.now().strftime('%d.%m.%Y')}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}"
     await create_contract(config, project=data['id'], agent=user['id'], firm=data['company_info']['shortName'],
                           inn=data['inn'], code=data['number'])
     if data["is_special"]:
@@ -118,7 +118,8 @@ async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
     else:
         pdf_create(data['number'], c.from_user.id, data['signature'], data['company_info'])
     await didox_create_doc(config, f"{c.from_user.id}.pdf", data["number"], data["inn"])
-    await c.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{c.from_user.id}.pdf"), caption=text)
+    await c.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{c.from_user.id}.pdf"),
+                              caption=text)
     await c.message.edit_text("Договор успешно принят ✅\n"
                               "Для продолжения работы с ботом используйте кнопки ниже 👇",
                               reply_markup=menu_kb(user["is_boss"]))
@@ -136,10 +137,15 @@ async def get_history_projects(c: CallbackQuery, config):
     res = await get_contracts(c.from_user.id, config)
     if len(res) == 0:
         return await c.answer("Созданные договоры не найдены ❌")
-    text = ""
+    await c.message.delete()
+    text, counts = "", 0
     for i in res:
+        if counts == 7:
+            await c.message.answer(text)
+            text, counts = "", 0
+        counts += 1
         text += f"📄 Номер договора: {i['code']}\n🗂 ИНН организации: {i['inn']}\n🏭 Имя организации: {i['firm']}\n📅 Дата заключения: {i['created_at'][0:10]}\n\n"
-    await c.message.edit_text(text, reply_markup=back_kb)
+    await c.message.answer(text, reply_markup=back_kb)
 
 
 async def check(c: CallbackQuery, config):

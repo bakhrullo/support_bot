@@ -256,7 +256,7 @@ async def get_percent_confirm(c: CallbackQuery, state: FSMContext, config):
 
 async def back(c: CallbackQuery, state: FSMContext, config):
     user = await get_agent(config, c.from_user.id)
-    if str(await state.get_state()) == "Project:get_conf" or "Project.get_doc_type":
+    if str(await state.get_state()) == "Project:get_conf" or str(await state.get_state()) == "Project.get_doc_type":
         data = await state.get_data()
         await c.bot.send_message(config.tg_bot.channel_id, f"Договор по номеру {data['number']} аннулирован")
     await c.message.delete()

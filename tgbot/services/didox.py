@@ -12,6 +12,7 @@ async def didox_get_token(config):
     async with aiohttp.ClientSession() as session:
         async with session.post(url=config.misc.didox_token_url, data={"password": config.misc.didox_pass}) as \
                 response:
+            print(response)
             return await response.json()
 
 

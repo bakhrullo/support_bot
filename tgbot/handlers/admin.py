@@ -102,15 +102,15 @@ async def get_inn(m: Message, state: FSMContext, config):
         text += f"Тип документа[{data['doc_pdf']}]✅\n"
     mess = await m.answer("⏳")
     user = await get_agent(config, m.from_user.id)
-    channel_text = f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']} от {datetime.now().strftime('%d.%m.%Y')}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}"
-    await create_contract(config, project=data['id'], agent=user['id'], firm=data['company_info']['shortName'],
-                          inn=data['inn'], code=data['number'])
+    channel_text = f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']} от {datetime.now().strftime('%d.%m.%Y')}\n🗂 ИНН организации: {m.text}\n🏭 Название фирмы: {res['company_info']['shortName']}\n📃 Название проекта: {data['name']}"
+    await create_contract(config, project=data['id'], agent=user['id'], firm=res['company_info']['shortName'],
+                          inn=m.text, code=data['number'])
     if data["is_special"]:
         text += f"\n📑 Тип документа: {data['doc_pdf']}"
-        pdf_create_special(data['number'], m.from_user.id, data['signature'], data['company_info'], data['doc_pdf'])
+        pdf_create_special(data['number'], m.from_user.id, data['signature'], res['company_info'], data['doc_pdf'])
     else:
-        pdf_create(data['number'], m.from_user.id, data['signature'], data['company_info'])
-    await didox_create_doc(config, f"{m.from_user.id}.pdf", data["number"], data["inn"])
+        pdf_create(data['number'], m.from_user.id, data['signature'], res['company_info'])
+    await didox_create_doc(config, f"{m.from_user.id}.pdf", data["number"], m.text)
     await m.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{m.from_user.id}.pdf"),
                               caption=channel_text)
     await mess.edit_text(text)

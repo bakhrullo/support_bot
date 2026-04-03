@@ -100,9 +100,23 @@ async def get_inn(m: Message, state: FSMContext, config):
     text = f"Номер договора:\n[{data['number']} от {datetime.now().strftime('%d.%m.%Y')}]✅\nИНН организации:\n[{m.text}]✅\nНазвание фирмы:\n[{res['shortName']}]✅\nНазвание проекта:\n[{data['name']}]✅\n"
     if data["is_special"]:
         text += f"Тип документа[{data['doc_pdf']}]✅\n"
-    await m.answer(text, reply_markup=contract_conf_kb)
-    await state.update_data(inn=m.text, company_info=res)
-    await Project.next()
+    mess = await m.answer("⏳")
+    user = await get_agent(config, m.from_user.id)
+    channel_text = f"👤 Агент: {user['name']}\n📥 Номер агента: {user['uniq']}\n🆔 Номер договора: {data['number']} от {datetime.now().strftime('%d.%m.%Y')}\n🗂 ИНН организации: {data['inn']}\n🏭 Название фирмы: {data['company_info']['shortName']}\n📃 Название проекта: {data['name']}"
+    await create_contract(config, project=data['id'], agent=user['id'], firm=data['company_info']['shortName'],
+                          inn=data['inn'], code=data['number'])
+    if data["is_special"]:
+        text += f"\n📑 Тип документа: {data['doc_pdf']}"
+        pdf_create_special(data['number'], m.from_user.id, data['signature'], data['company_info'], data['doc_pdf'])
+    else:
+        pdf_create(data['number'], m.from_user.id, data['signature'], data['company_info'])
+    await didox_create_doc(config, f"{m.from_user.id}.pdf", data["number"], data["inn"])
+    await m.bot.send_document(chat_id=config.tg_bot.channel_id, document=InputFile(f"{m.from_user.id}.pdf"),
+                              caption=channel_text)
+    await mess.edit_text(text)
+    await m.answer("Договор успешно принят ✅\n" \
+                   "Для продолжения работы с ботом используйте кнопки ниже 👇", reply_markup=menu_kb(user["is_boss"]))
+    await MainMenu.get_menu.set()
 
 
 async def get_last_conf(c: CallbackQuery, state: FSMContext, config):
@@ -208,8 +222,8 @@ async def percent_get_project(c: CallbackQuery, state: FSMContext):
 async def get_percent(m: Message, state: FSMContext):
     if not m.text.isdigit():
         return await m.answer("Пожалуйста отправьте число! ❌")
-    if not 1 <= int(m.text) <= 99:
-        return await m.answer("Процент должен быть в районе от 1 до 99 ! ❌")
+    if not int(m.text) <= 99:
+        return await m.answer("Процент должен быть в районе до 99 ! ❌")
     await state.update_data(percent=m.text)
     await m.answer("Отправьте срок 📅")
     await Percent.next()

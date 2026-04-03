@@ -49,8 +49,8 @@ async def didox_create_doc(config, doc_name, doc_no, doc_inn):
                 "DocumentName": ""
             },
             "ContractDoc": {
-                "ContractNo": "",
-                "ContractDate": ""
+                "ContractNo": doc_no,
+                "ContractDate": f"{date.today().strftime('%Y-%m-%d')}"
             },
             "Seller": {
                 "TaxGap": None,

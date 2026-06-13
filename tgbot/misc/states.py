@@ -39,3 +39,10 @@ class History(StatesGroup):
 
 class Certificate(StatesGroup):
     get_certificate = State()
+
+
+class Register(StatesGroup):
+    get_approve = State()
+    get_city = State()
+    get_proj = State()
+    get_name = State()

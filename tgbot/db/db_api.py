@@ -1,9 +1,32 @@
 import aiohttp
 
 
+async def get_city(config):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=f"{config.db.db_url}city") as response:
+            return await response.json()
+
+
+async def create_request(config, **kwargs):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url=f"{config.db.db_url}request", data={"name": kwargs["name"],
+                                                                        "tg_id": kwargs["tg_id"],
+                                                                        "city": kwargs["city"],
+                                                                        "project": kwargs["project"]}) as response:
+            print(response)
+            return await response.json()
+
+
 async def get_projects(user_id, config):
     async with aiohttp.ClientSession() as session:
         async with session.get(url=f"{config.db.db_url}project", params={"id": user_id}) as \
+                response:
+            return await response.json()
+
+
+async def get_all_projects(config):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=f"{config.db.db_url}projects") as \
                 response:
             return await response.json()
 

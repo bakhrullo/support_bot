@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext

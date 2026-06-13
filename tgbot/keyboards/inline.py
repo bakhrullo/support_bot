@@ -4,6 +4,22 @@ back_btn = InlineKeyboardButton("Назад 🔙", callback_data="back")
 
 back_kb = InlineKeyboardMarkup(row_width=1).add(InlineKeyboardButton("Назад 🔙", callback_data="backs"))
 
+register_kb = InlineKeyboardMarkup(row_width=1).add(InlineKeyboardButton("Регистрация 🗂", callback_data="register"))
+
+
+def city_kb(citys):
+    kb = InlineKeyboardMarkup(row_width=1)
+    for city in citys:
+        kb.insert(InlineKeyboardButton(city["name"], callback_data=city["id"]))
+    return kb
+
+
+def project_kb(projects):
+    kb = InlineKeyboardMarkup(row_width=2)
+    for project in projects:
+        kb.insert(InlineKeyboardButton(project["name"], callback_data=project["id"]))
+    return kb
+
 
 def menu_kb(is_boss):
     menu_btn = InlineKeyboardMarkup(row_width=1).add(

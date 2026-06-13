@@ -11,6 +11,7 @@ from tgbot.filters.back import BackFilter
 from tgbot.filters.day import WeekdayFilter
 from tgbot.handlers.admin import register_admin
 from tgbot.handlers.echo import register_echo
+from tgbot.handlers.user import register_user
 from tgbot.middlewares.environment import EnvironmentMiddleware
 from tgbot.services.bot_commands import set_default_commands
 
@@ -30,6 +31,7 @@ def register_all_filters(dp):
 
 
 def register_all_handlers(dp):
+    register_user(dp)
     register_admin(dp)
     # if DEBUG:
     #     register_echo(dp)
